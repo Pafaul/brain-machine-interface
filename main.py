@@ -8,6 +8,7 @@ from lib.get_states import *
 from lib.parsing_functions import *
 from lib.serial_connection import *
 
+
 def setup_server(configuration: list) -> generator:
     server_type = configuration['server']['server_type']
     if (server_type == 'cortex'):
@@ -22,6 +23,7 @@ def setup_server(configuration: list) -> generator:
     else:
         raise Exception('Unknown server type: {server_type}')
 
+
 def setup_serial(configuration: list) -> object:
     serial_type = configuration['serial']['com_port_to_use']
     if (serial_type == 'dummy'):
@@ -33,12 +35,14 @@ def setup_serial(configuration: list) -> object:
         except Exception:
             raise Exception('Cannot connect to {serial_type} device')
 
+
 def setup_templates(configuration: list) -> dict:
     template_file = configuration['parsing']['template_file']
     try:
         templates = create_templates_from_file(template_file)
     except FileNotFoundError:
         raise Exception('File {template_file} not found ')
+
 
 def setup_parsing_functions(configuration: list) -> function:
     function_name = configuration['parsing']['parsing_function']
@@ -53,10 +57,13 @@ def setup_parsing_functions(configuration: list) -> function:
     else:
         raise Exception('Parsing function {function_name} not found')
 
+ 
 def setup_consts(configuration: list) -> dict:
     constants = configuration['default']
     constants['state_sequence_length'] = configuration['parsing']['state_sequence_length']
+    constants['max_template_lenght'] = configuration['parsing']['max_template_lenght']
     return constants
+
 
 def parse_configuration_file(config_file: str) -> list:
     '''
@@ -75,6 +82,7 @@ def parse_configuration_file(config_file: str) -> list:
     ]
     
     return setup
+
 
 def loop(config: list):
     constants, parse_func, templates, server, serial_port = config
@@ -109,7 +117,8 @@ def loop(config: list):
         print(e)
 
     finish(config)
-    
+
+  
 def finish(config):
     constants, parse_func, templates, server, serial_port = config
     serial_port.close()

@@ -1,6 +1,8 @@
 import http.client
 import json
+
 from numpy import random
+
 
 class GetState:
     @staticmethod
