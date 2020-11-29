@@ -21,7 +21,7 @@ def setup_server(configuration: list) -> generator:
         time = int(configuration['default']['working_time'])
         return GetState.get_state_random_uniform(lower_bound, upper_bound, time)
     else:
-        raise Exception('Unknown server type: {server_type}')
+        raise Exception(f'Unknown server type: {server_type}')
 
 
 def setup_serial(configuration: list) -> object:
@@ -33,7 +33,7 @@ def setup_serial(configuration: list) -> object:
             serial_speed = int(configuration['serial']['serial_connection_speed'])
             return connect_serial(serial_type, serial_speed)
         except Exception:
-            raise Exception('Cannot connect to {serial_type} device')
+            raise Exception(f'Cannot connect to {serial_type} device')
 
 
 def setup_templates(configuration: list) -> dict:
@@ -41,7 +41,7 @@ def setup_templates(configuration: list) -> dict:
     try:
         templates = create_templates_from_file(template_file)
     except FileNotFoundError:
-        raise Exception('File {template_file} not found ')
+        raise Exception(f'File {template_file} not found ')
 
 
 def setup_parsing_functions(configuration: list) -> function:
@@ -55,7 +55,7 @@ def setup_parsing_functions(configuration: list) -> function:
     elif (function_name == 'mean_state_ceil'):
         return mean_state_ceil
     else:
-        raise Exception('Parsing function {function_name} not found')
+        raise Exception(f'Parsing function {function_name} not found')
 
  
 def setup_consts(configuration: list) -> dict:
@@ -104,12 +104,12 @@ def loop(config: list):
             for template_name in templates.keys():
                 template = templates[template_name]
                 if (match_with_template(current_states, template[0], 0)):
-                    print('Template: {template_name}')
+                    print(f'Template: {template_name}')
                     serial_port.write(template[1])
                     break
             else:
                 states_sequence = ' '.join(current_states)
-                print('No template matches sequence {states_sequence}')
+                print(f'No template matches sequence {states_sequence}')
         
             current_states.pop(0)
 
