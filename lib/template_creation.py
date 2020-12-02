@@ -1,4 +1,4 @@
-def create_templates_from_file(filename, separator):
+def create_templates_from_file(filename, separator=','):
     templates = {}
     with open(filename, 'r') as f:
         lines = f.readlines()

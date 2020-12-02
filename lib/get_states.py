@@ -26,7 +26,7 @@ class GetState:
             lines = f.readlines()
 
         for line in lines:
-            state, time = line.split(separator)
+            time, state = line.strip().split(separator)
             yield [state, time]
         yield None
 

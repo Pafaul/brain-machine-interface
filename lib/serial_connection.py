@@ -5,7 +5,7 @@ class DummyPort:
     def write(self, *args):
         return True
 
-    def close():
+    def close(self):
         pass
 
 def connect_serial(COM_port: str, serial_speed: int = 9600):

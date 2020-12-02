@@ -9,7 +9,7 @@ from lib.parsing_functions import *
 from lib.serial_connection import *
 
 
-def setup_server(configuration: list) -> generator:
+def setup_server(configuration: list):
     server_type = configuration['server']['server_type']
     if (server_type == 'cortex'):
         return GetState.get_state_server(configuration['server']['server_url'])
@@ -40,11 +40,12 @@ def setup_templates(configuration: list) -> dict:
     template_file = configuration['parsing']['template_file']
     try:
         templates = create_templates_from_file(template_file)
+        return templates
     except FileNotFoundError:
         raise Exception(f'File {template_file} not found ')
 
 
-def setup_parsing_functions(configuration: list) -> function:
+def setup_parsing_functions(configuration: list):
     function_name = configuration['parsing']['parsing_function']
     if (function_name == 'maximum'):
         return maximum
@@ -59,9 +60,14 @@ def setup_parsing_functions(configuration: list) -> function:
 
  
 def setup_consts(configuration: list) -> dict:
-    constants = configuration['default']
+    constants = dict(configuration['default'])
     constants['state_sequence_length'] = configuration['parsing']['state_sequence_length']
-    constants['max_template_lenght'] = configuration['parsing']['max_template_lenght']
+    constants['max_template_length'] = configuration['parsing']['max_template_length']
+    for key in constants.keys():
+        if '.' not in constants[key]:
+            constants[key] = int(constants[key])
+        else:
+            constants[key] = float(constants[key])
     return constants
 
 
@@ -72,7 +78,7 @@ def parse_configuration_file(config_file: str) -> list:
     config = configparser.ConfigParser()
     config.read(config_file)
 
-    setup = [dict(config['default'])]
+    setup = []
     setup_functions = [
         setup_consts,
         setup_parsing_functions,
@@ -80,6 +86,9 @@ def parse_configuration_file(config_file: str) -> list:
         setup_server,
         setup_serial
     ]
+
+    for function in setup_functions:
+        setup.append(function(config))
     
     return setup
 
@@ -92,8 +101,9 @@ def loop(config: list):
         while True:
             if (len(current_states) < constants['state_sequence_length']):
                 local_states = []
-                for _ in range(constants['max_template_length']):
-                    local_states.append(next(server))
+                for _ in range(int(constants['max_template_length'])):
+                    state, t = next(server)
+                    local_states.append(state)
                 state = parse_func(local_states, constants['stop_state'])
                 current_states.append(state[0])
                 continue
@@ -105,13 +115,14 @@ def loop(config: list):
                 template = templates[template_name]
                 if (match_with_template(current_states, template[0], 0)):
                     print(f'Template: {template_name}')
+                    print(template, current_states)
                     serial_port.write(template[1])
+                    current_states=current_states[len(template):]
                     break
             else:
                 states_sequence = ' '.join(current_states)
                 print(f'No template matches sequence {states_sequence}')
-        
-            current_states.pop(0)
+                current_states.pop(0)
 
     except Exception as e:
         print(e)
@@ -124,8 +135,11 @@ def finish(config):
     serial_port.close()
 
 def main():
-    if (len(argv) != 1):
-        raise Exception('Invalid arguments lenght.\nOne argument required: path to configuration file.')
+    if (len(argv) != 2):
+        raise Exception(f'Invalid arguments lenght.\nOne argument required: path to configuration file.')
     else:
         configuration = parse_configuration_file(argv[1])
         loop(configuration)
+
+if __name__ == "__main__":
+    main()
