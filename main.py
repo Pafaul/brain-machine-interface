@@ -115,7 +115,6 @@ def loop(config: list):
                 template = templates[template_name]
                 if (match_with_template(current_states, template[0], 0)):
                     print(f'Template: {template_name}')
-                    print(template, current_states)
                     serial_port.write(template[1])
                     current_states=current_states[len(template):]
                     break
